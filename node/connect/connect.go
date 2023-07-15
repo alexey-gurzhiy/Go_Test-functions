@@ -6,22 +6,35 @@ import (
 	log "EthJar/app/log"
 
 	"github.com/ethereum/go-ethereum/ethclient"
+	"github.com/sirupsen/logrus"
 )
 
-func LiveConnectionToEthereumNode(nodeURL string) (conn *ethclient.Client, cntxt context.Context) {
+type App struct {
+	conn   *ethclient.Client
+	logger log.Logger
+}
 
-	log := log.WithFields(log.Fields{
+func NewApp(logger log.Logger) *App {
+	return &App{
+		logger: logger,
+	}
+}
+
+func (a *App) LiveConnectionToEthereumNode(nodeURL string) (ctx context.Context) {
+	var err error
+	a.logger.WithFields(logrus.Fields{
 		"\n	1. Module":   "node/connect",
 		"\n	2. Function": "LiveConnectionToEthereumNode",
 	})
-	conn, err := ethclient.Dial(nodeURL)
+
+	a.conn, err = ethclient.Dial(nodeURL)
 
 	if err != nil {
-		log.Fatal("Failed to connect to Eth Node:", err)
+		a.logger.Fatal("Failed to connect to Eth Node:", err)
 	} else {
-		log.Trace("connection to ", nodeURL, " was established")
+		a.logger.Trace("connection to ", nodeURL, " was established")
 	}
-	cntxt = context.Background()
-	return conn, cntxt
-
+	ctx = context.Background()
+	a.logger.Trace(a.conn, "\n", ctx)
+	return ctx
 }

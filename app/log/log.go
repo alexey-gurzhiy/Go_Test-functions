@@ -1,126 +1,73 @@
 package log
 
 import (
-	"flag"
 	"os"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
-type Fields map[string]interface{}
+// Этот интерфейс конечно можно использовать, но по факту он заточен под logrus.
+// Заменить потом на другой логгер не получится, нужно будет менять интерфейс
+// Вполне возможно сейчас имеет смысл указать в App поле logger *logrus.Logger вместо log.Logger
+type Logger interface {
+	Trace(args ...interface{})
+	Tracef(format string, args ...interface{})
 
+	Debug(args ...interface{})
+	Debugf(format string, args ...interface{})
 
-func init() {
-	var loglevel string
+	Print(args ...interface{})
+	Printf(format string, args ...interface{})
 
-	flag.StringVar(&loglevel, "log level", "Trace", "Specify desired log level")
-	flag.Parse()
+	Info(args ...interface{})
+	Infof(format string, args ...interface{})
 
-	log.SetFormatter(&log.TextFormatter{
+	Warn(args ...interface{})
+	Warnf(format string, args ...interface{})
+
+	Warning(args ...interface{})
+	Warningf(format string, args ...interface{})
+
+	Error(args ...interface{})
+	Errorf(format string, args ...interface{})
+
+	Panic(args ...interface{})
+	Panicf(format string, args ...interface{})
+
+	Fatal(args ...interface{})
+	Fatalf(format string, args ...interface{})
+
+	WithFields(fields logrus.Fields) *logrus.Entry
+}
+
+func NewLogger(loglevel string) *logrus.Logger {
+	logger := logrus.New()
+	logger.SetFormatter(&logrus.TextFormatter{
 		ForceColors:   true,
 		DisableQuote:  true,
-		FullTimestamp: true})
-	log.SetOutput(os.Stdout)
+		FullTimestamp: true,
+	})
+	logger.SetOutput(os.Stdout)
 
+	logger.SetLevel(getLogLevel(loglevel))
+	return logger
+}
+
+func getLogLevel(loglevel string) logrus.Level {
 	switch loglevel {
 	case "Trace":
-		log.SetLevel(log.TraceLevel)
+		return logrus.TraceLevel
 	case "Debug":
-		log.SetLevel(log.DebugLevel)
+		return logrus.DebugLevel
 	case "Info":
-		log.SetLevel(log.InfoLevel)
+		return logrus.InfoLevel
 	case "Error":
-		log.SetLevel(log.ErrorLevel)
+		return logrus.ErrorLevel
 	case "Fatal":
-		log.SetLevel(log.FatalLevel)
+		return logrus.FatalLevel
 	case "Panic":
-		log.SetLevel(log.PanicLevel)
+		return logrus.PanicLevel
 	default:
-		log.SetLevel(log.WarnLevel)
+		return logrus.WarnLevel
 	}
-}
-
-func WithFields(fields Fields) *log.Entry {
-	return log.WithFields(log.Fields(fields))
-}
-
-// Trace logs a message at level Trace on the standard logger.
-func Trace(args ...interface{}) {
-	log.Trace(args...)
-}
-
-func Tracef(string string, args ...interface{}) {
-	log.Tracef(string, args...)
-}
-
-// Debug logs a message at level Debug on the standard logger.
-func Debug(args ...interface{}) {
-	log.Debug(args...)
-}
-
-func Debugf(string string, args ...interface{}) {
-	log.Debugf(string, args...)
-}
-
-// Print logs a message at level Info on the standard logger.
-func Print(args ...interface{}) {
-	log.Print(args...)
-}
-
-func Printf(string string, args ...interface{}) {
-	log.Printf(string, args...)
-}
-
-// Info logs a message at level Info on the standard logger.
-func Info(args ...interface{}) {
-	log.Info(args...)
-}
-
-func Infof(string string, args ...interface{}) {
-	log.Infof(string, args...)
-}
-
-// Warn logs a message at level Warn on the standard logger.
-func Warn(args ...interface{}) {
-	log.Warn(args...)
-}
-
-func DWarnf(string string, args ...interface{}) {
-	log.Warnf(string, args...)
-}
-
-// Warning logs a message at level Warn on the standard logger.
-func Warning(args ...interface{}) {
-	log.Warning(args...)
-}
-
-func Warningf(string string, args ...interface{}) {
-	log.Warningf(string, args...)
-}
-
-// Error logs a message at level Error on the standard logger.
-func Error(args ...interface{}) {
-	log.Error(args...)
-}
-
-func Errorf(string string, args ...interface{}) {
-	log.Errorf(string, args...)
-}
-
-// Panic logs a message at level Panic on the standard logger.
-func Panic(args ...interface{}) {
-	log.Panic(args...)
-}
-
-func DPanicf(string string, args ...interface{}) {
-	log.Panicf(string, args...)
-}
-
-// Fatal logs a message at level Fatal on the standard logger then the process will exit with status set to 1.
-func Fatal(args ...interface{}) {
-	log.Fatal(args...)
-}
-
-func Fatalf(string string, args ...interface{}) {
-	log.Fatalf(string, args...)
 }

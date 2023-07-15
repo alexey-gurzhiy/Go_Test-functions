@@ -3,6 +3,7 @@ package main
 import (
 	"EthJar/app/log"
 	"EthJar/node/connect"
+	"flag"
 )
 
 const (
@@ -13,7 +14,12 @@ const (
 )
 
 func main() {
-	conn, cntnxt := connect.LiveConnectionToEthereumNode(nodeURLSepolia)
-	log.Trace(conn, "\n", cntnxt)
+	var loglevel string
 
+	flag.StringVar(&loglevel, "log level", "Trace", "Specify desired log level")
+	flag.Parse()
+
+	logger := log.NewLogger(loglevel)
+	app := connect.NewApp(logger)
+	app.LiveConnectionToEthereumNode(nodeURLSepolia)
 }
